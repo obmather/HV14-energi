@@ -13,8 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as HistorikkRouteImport } from './routes/historikk'
 import { Route as InnstillingerRouteImport } from './routes/innstillinger'
 import { Route as EnergiIndexRouteImport } from './routes/energi.index'
+import { Route as EnergiElbilladingRouteImport } from './routes/energi.elbillading'
+import { Route as EnergiEnheterRouteImport } from './routes/energi.enheter'
 import { Route as EnergiHistorikkRouteImport } from './routes/energi.historikk'
 import { Route as EnergiMalepunkterRouteImport } from './routes/energi.malepunkter'
+import { Route as EnergiStromforbrukRouteImport } from './routes/energi.stromforbruk'
+import { Route as EnergiStrompriserRouteImport } from './routes/energi.strompriser'
 import { Route as MalepunkterIndexRouteImport } from './routes/malepunkter.index'
 import { Route as MalepunkterMeterIdRouteImport } from './routes/malepunkter.$meterId'
 
@@ -38,6 +42,16 @@ const EnergiIndexRoute = EnergiIndexRouteImport.update({
   path: '/energi/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnergiElbilladingRoute = EnergiElbilladingRouteImport.update({
+  id: '/energi/elbillading',
+  path: '/energi/elbillading',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnergiEnheterRoute = EnergiEnheterRouteImport.update({
+  id: '/energi/enheter',
+  path: '/energi/enheter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EnergiHistorikkRoute = EnergiHistorikkRouteImport.update({
   id: '/energi/historikk',
   path: '/energi/historikk',
@@ -46,6 +60,16 @@ const EnergiHistorikkRoute = EnergiHistorikkRouteImport.update({
 const EnergiMalepunkterRoute = EnergiMalepunkterRouteImport.update({
   id: '/energi/malepunkter',
   path: '/energi/malepunkter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnergiStromforbrukRoute = EnergiStromforbrukRouteImport.update({
+  id: '/energi/stromforbruk',
+  path: '/energi/stromforbruk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnergiStrompriserRoute = EnergiStrompriserRouteImport.update({
+  id: '/energi/strompriser',
+  path: '/energi/strompriser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MalepunkterIndexRoute = MalepunkterIndexRouteImport.update({
@@ -63,8 +87,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/elbillading': typeof EnergiElbilladingRoute
+  '/energi/enheter': typeof EnergiEnheterRoute
   '/energi/historikk': typeof EnergiHistorikkRoute
   '/energi/malepunkter': typeof EnergiMalepunkterRoute
+  '/energi/stromforbruk': typeof EnergiStromforbrukRoute
+  '/energi/strompriser': typeof EnergiStrompriserRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
   '/energi/': typeof EnergiIndexRoute
   '/malepunkter/': typeof MalepunkterIndexRoute
@@ -73,8 +101,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/elbillading': typeof EnergiElbilladingRoute
+  '/energi/enheter': typeof EnergiEnheterRoute
   '/energi/historikk': typeof EnergiHistorikkRoute
   '/energi/malepunkter': typeof EnergiMalepunkterRoute
+  '/energi/stromforbruk': typeof EnergiStromforbrukRoute
+  '/energi/strompriser': typeof EnergiStrompriserRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
   '/energi': typeof EnergiIndexRoute
   '/malepunkter': typeof MalepunkterIndexRoute
@@ -84,8 +116,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/elbillading': typeof EnergiElbilladingRoute
+  '/energi/enheter': typeof EnergiEnheterRoute
   '/energi/historikk': typeof EnergiHistorikkRoute
   '/energi/malepunkter': typeof EnergiMalepunkterRoute
+  '/energi/stromforbruk': typeof EnergiStromforbrukRoute
+  '/energi/strompriser': typeof EnergiStrompriserRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
   '/energi/': typeof EnergiIndexRoute
   '/malepunkter/': typeof MalepunkterIndexRoute
@@ -96,8 +132,12 @@ export interface FileRouteTypes {
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/elbillading'
+    | '/energi/enheter'
     | '/energi/historikk'
     | '/energi/malepunkter'
+    | '/energi/stromforbruk'
+    | '/energi/strompriser'
     | '/malepunkter/$meterId'
     | '/energi/'
     | '/malepunkter/'
@@ -106,8 +146,12 @@ export interface FileRouteTypes {
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/elbillading'
+    | '/energi/enheter'
     | '/energi/historikk'
     | '/energi/malepunkter'
+    | '/energi/stromforbruk'
+    | '/energi/strompriser'
     | '/malepunkter/$meterId'
     | '/energi'
     | '/malepunkter'
@@ -116,8 +160,12 @@ export interface FileRouteTypes {
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/elbillading'
+    | '/energi/enheter'
     | '/energi/historikk'
     | '/energi/malepunkter'
+    | '/energi/stromforbruk'
+    | '/energi/strompriser'
     | '/malepunkter/$meterId'
     | '/energi/'
     | '/malepunkter/'
@@ -127,8 +175,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistorikkRoute: typeof HistorikkRoute
   InnstillingerRoute: typeof InnstillingerRoute
+  EnergiElbilladingRoute: typeof EnergiElbilladingRoute
+  EnergiEnheterRoute: typeof EnergiEnheterRoute
   EnergiHistorikkRoute: typeof EnergiHistorikkRoute
   EnergiMalepunkterRoute: typeof EnergiMalepunkterRoute
+  EnergiStromforbrukRoute: typeof EnergiStromforbrukRoute
+  EnergiStrompriserRoute: typeof EnergiStrompriserRoute
   MalepunkterMeterIdRoute: typeof MalepunkterMeterIdRoute
   EnergiIndexRoute: typeof EnergiIndexRoute
   MalepunkterIndexRoute: typeof MalepunkterIndexRoute
@@ -164,6 +216,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnergiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/energi/elbillading': {
+      id: '/energi/elbillading'
+      path: '/energi/elbillading'
+      fullPath: '/energi/elbillading'
+      preLoaderRoute: typeof EnergiElbilladingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/energi/enheter': {
+      id: '/energi/enheter'
+      path: '/energi/enheter'
+      fullPath: '/energi/enheter'
+      preLoaderRoute: typeof EnergiEnheterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/energi/historikk': {
       id: '/energi/historikk'
       path: '/energi/historikk'
@@ -176,6 +242,20 @@ declare module '@tanstack/react-router' {
       path: '/energi/malepunkter'
       fullPath: '/energi/malepunkter'
       preLoaderRoute: typeof EnergiMalepunkterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/energi/stromforbruk': {
+      id: '/energi/stromforbruk'
+      path: '/energi/stromforbruk'
+      fullPath: '/energi/stromforbruk'
+      preLoaderRoute: typeof EnergiStromforbrukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/energi/strompriser': {
+      id: '/energi/strompriser'
+      path: '/energi/strompriser'
+      fullPath: '/energi/strompriser'
+      preLoaderRoute: typeof EnergiStrompriserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/malepunkter/': {
@@ -199,8 +279,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistorikkRoute: HistorikkRoute,
   InnstillingerRoute: InnstillingerRoute,
+  EnergiElbilladingRoute: EnergiElbilladingRoute,
+  EnergiEnheterRoute: EnergiEnheterRoute,
   EnergiHistorikkRoute: EnergiHistorikkRoute,
   EnergiMalepunkterRoute: EnergiMalepunkterRoute,
+  EnergiStromforbrukRoute: EnergiStromforbrukRoute,
+  EnergiStrompriserRoute: EnergiStrompriserRoute,
   MalepunkterMeterIdRoute: MalepunkterMeterIdRoute,
   EnergiIndexRoute: EnergiIndexRoute,
   MalepunkterIndexRoute: MalepunkterIndexRoute,

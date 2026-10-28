@@ -10,33 +10,89 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HistorikkRouteImport } from './routes/historikk'
+import { Route as InnstillingerRouteImport } from './routes/innstillinger'
+import { Route as MalepunkterIndexRouteImport } from './routes/malepunkter.index'
+import { Route as MalepunkterMeterIdRouteImport } from './routes/malepunkter.$meterId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HistorikkRoute = HistorikkRouteImport.update({
+  id: '/historikk',
+  path: '/historikk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InnstillingerRoute = InnstillingerRouteImport.update({
+  id: '/innstillinger',
+  path: '/innstillinger',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MalepunkterIndexRoute = MalepunkterIndexRouteImport.update({
+  id: '/malepunkter/',
+  path: '/malepunkter/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MalepunkterMeterIdRoute = MalepunkterMeterIdRouteImport.update({
+  id: '/malepunkter/$meterId',
+  path: '/malepunkter/$meterId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/historikk': typeof HistorikkRoute
+  '/innstillinger': typeof InnstillingerRoute
+  '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/malepunkter/': typeof MalepunkterIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/historikk': typeof HistorikkRoute
+  '/innstillinger': typeof InnstillingerRoute
+  '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/malepunkter': typeof MalepunkterIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/historikk': typeof HistorikkRoute
+  '/innstillinger': typeof InnstillingerRoute
+  '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/malepunkter/': typeof MalepunkterIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/historikk'
+    | '/innstillinger'
+    | '/malepunkter/$meterId'
+    | '/malepunkter/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/historikk'
+    | '/innstillinger'
+    | '/malepunkter/$meterId'
+    | '/malepunkter'
+  id:
+    | '__root__'
+    | '/'
+    | '/historikk'
+    | '/innstillinger'
+    | '/malepunkter/$meterId'
+    | '/malepunkter/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HistorikkRoute: typeof HistorikkRoute
+  InnstillingerRoute: typeof InnstillingerRoute
+  MalepunkterMeterIdRoute: typeof MalepunkterMeterIdRoute
+  MalepunkterIndexRoute: typeof MalepunkterIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +104,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/historikk': {
+      id: '/historikk'
+      path: '/historikk'
+      fullPath: '/historikk'
+      preLoaderRoute: typeof HistorikkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/innstillinger': {
+      id: '/innstillinger'
+      path: '/innstillinger'
+      fullPath: '/innstillinger'
+      preLoaderRoute: typeof InnstillingerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/malepunkter/': {
+      id: '/malepunkter/'
+      path: '/malepunkter'
+      fullPath: '/malepunkter/'
+      preLoaderRoute: typeof MalepunkterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/malepunkter/$meterId': {
+      id: '/malepunkter/$meterId'
+      path: '/malepunkter/$meterId'
+      fullPath: '/malepunkter/$meterId'
+      preLoaderRoute: typeof MalepunkterMeterIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HistorikkRoute: HistorikkRoute,
+  InnstillingerRoute: InnstillingerRoute,
+  MalepunkterMeterIdRoute: MalepunkterMeterIdRoute,
+  MalepunkterIndexRoute: MalepunkterIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

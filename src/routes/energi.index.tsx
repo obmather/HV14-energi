@@ -1,20 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Zap } from "lucide-react";
+import { BarChart3, ChevronRight, Gauge, PlugZap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/water/AppShell";
-import { QueryError } from "@/components/water/status";
-import { EnergyChart } from "@/components/energy/EnergyChart";
-import { EnergyMockBadge } from "@/components/energy/status";
-import { energyDaysQuery, energyMetersQuery, formatKwh, totalKwh, type EnergyMeter } from "@/lib/energy/data";
+import { formatDateTime, formatNumber, formatRelative } from "@/lib/water/format";
+import { MAIN_METER } from "@/lib/energy/data";
+import { chargersQuery, isStale, stateLabel } from "@/lib/energy/easee-client";
 
 export const Route = createFileRoute("/energi/")({
   head: () => ({
     meta: [
-      { title: "Oversikt – HV14 Energi" },
-      { name: "description", content: "Oversikt over energimålere og energiforbruk i HV14 Energi." },
-      { property: "og:title", content: "Oversikt – HV14 Energi" },
-      { property: "og:description", content: "Oversikt over energimålere og energiforbruk." },
+      { title: "Totalt strømforbruk – HV14 Energi" },
+      { name: "description", content: "Eiendommens totale strømforbruk fra hovedmåleren, og status for elbillading." },
+      { property: "og:title", content: "Totalt strømforbruk – HV14 Energi" },
+      { property: "og:description", content: "Eiendommens totale strømforbruk og status for elbillading." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -22,72 +21,115 @@ export const Route = createFileRoute("/energi/")({
   component: EnergyOverview,
 });
 
-function EnergyMeterCard({ meter }: { meter: EnergyMeter }) {
-  const q = useQuery(energyDaysQuery(meter.id, 30));
+function Pill({ tone, children }: { tone: "ok" | "warn" | "muted"; children: React.ReactNode }) {
+  const cls = tone === "ok" ? "bg-teal-soft text-teal" : tone === "warn" ? "bg-warning-soft text-warning" : "bg-muted text-muted-foreground";
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${cls}`}>{children}</span>;
+}
+
+const KPIS = [
+  { label: "Effekt nå", unit: "kW" },
+  { label: "Forbruk i dag", unit: "kWh" },
+  { label: "Forbruk denne måneden", unit: "kWh" },
+  { label: "Målerstand", unit: "kWh" },
+];
+
+function MainMeterSection() {
+  const m = MAIN_METER;
   return (
-    <article className="surface flex flex-col gap-5 p-5 sm:p-6">
-      <header className="flex items-start justify-between gap-3">
+    <section className="surface flex flex-col gap-5 p-5 sm:p-6" aria-labelledby="main-meter">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-teal">
-            <Zap className="h-5 w-5" />
+            <Gauge className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold leading-tight">{meter.name}</h2>
-            <p className="text-sm text-muted-foreground">{meter.location}</p>
+            <h2 id="main-meter" className="text-lg font-semibold leading-tight">{m.name} – {m.location}</h2>
+            <p className="text-sm text-muted-foreground">Måler: {m.manufacturer} · {m.description}</p>
           </div>
         </div>
-        <Link
-          to="/energi/malepunkter"
-          className="inline-flex shrink-0 items-center gap-0.5 rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
-        >
+        <Pill tone={m.connected ? "ok" : "muted"}>{m.connected ? "Tilkoblet" : "Ikke tilkoblet"}</Pill>
+      </header>
+      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {KPIS.map((k) => (
+          <div key={k.label} className="rounded-lg border border-border p-4">
+            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{k.label} ({k.unit})</dt>
+            <dd className="mt-1.5 text-sm text-muted-foreground">Venter på måledata</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="border-t border-border pt-4">
+        <h3 className="mb-3 text-sm font-semibold">Strømforbruk over tid</h3>
+        <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-center text-sm text-muted-foreground">
+          <BarChart3 className="h-5 w-5" />
+          Historiske målinger blir tilgjengelige når hovedmåleren er tilkoblet.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ChargerSummary() {
+  const q = useQuery(chargersQuery());
+  const c = q.data?.find((x) => /easee/i.test(x.deviceId) || /easee/i.test(x.name)) ?? q.data?.[0];
+  return (
+    <section className="surface flex flex-col gap-4 p-5" aria-labelledby="charger-summary">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-teal">
+            <PlugZap className="h-4.5 w-4.5" />
+          </div>
+          <div>
+            <h2 id="charger-summary" className="font-semibold leading-tight">Elbillading</h2>
+            <p className="text-sm text-muted-foreground">{c?.name ?? "Easee Mather"}</p>
+          </div>
+        </div>
+        <Link to="/energi/elbillading" className="inline-flex shrink-0 items-center gap-0.5 rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent">
           Detaljer <ChevronRight className="h-4 w-4" />
         </Link>
       </header>
       {q.isPending ? (
-        <Skeleton className="h-64" />
+        <Skeleton className="h-16" />
       ) : q.isError ? (
-        <QueryError onRetry={() => q.refetch()} />
+        <p className="text-sm text-muted-foreground">Ladedata er utilgjengelig akkurat nå.</p>
+      ) : !c ? (
+        <p className="text-sm text-muted-foreground">Ingen ladere funnet.</p>
       ) : (
-        <>
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Forbruk siste 30 dager</span>
-              <EnergyMockBadge />
-            </div>
-            <div className="text-4xl font-semibold tracking-tight tabular">{formatKwh(totalKwh(q.data), 0)}</div>
-            <div className="text-sm text-muted-foreground">
-              I går: {q.data.at(-2)?.kwh != null ? formatKwh(q.data.at(-2)!.kwh!) : "Mangler data"}
-            </div>
+        <dl className="grid gap-3 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-muted-foreground">Ladestatus</dt>
+            <dd className="mt-1 flex flex-wrap gap-1.5">
+              <Pill tone={c.state === "charging" ? "ok" : "muted"}>{stateLabel(c.state)}</Pill>
+              {isStale(c.lastReceivedAt) && <Pill tone="warn">Utdaterte data</Pill>}
+            </dd>
           </div>
-          <div className="border-t border-border pt-4">
-            <h3 className="mb-3 text-sm font-semibold">Energiforbruk per dag</h3>
-            <EnergyChart days={q.data} />
+          <div>
+            <dt className="text-muted-foreground">Ladeeffekt nå</dt>
+            <dd className="font-medium tabular">
+              {c.powerKw?.value != null ? `${formatNumber(c.powerKw.value, 2)} ${c.powerKw.unit ?? "kW"}` : <span className="text-muted-foreground">Mangler data</span>}
+            </dd>
           </div>
-        </>
+          <div>
+            <dt className="text-muted-foreground">Sist oppdatert</dt>
+            <dd className="font-medium">
+              {c.lastReceivedAt ? <>{formatDateTime(c.lastReceivedAt)} <span className="text-muted-foreground">({formatRelative(c.lastReceivedAt)})</span></> : "Ukjent"}
+            </dd>
+          </div>
+        </dl>
       )}
-    </article>
+    </section>
   );
 }
 
 function EnergyOverview() {
-  const q = useQuery(energyMetersQuery());
   return (
     <>
-      <PageHeader title="Oversikt" subtitle="Energiforbruk for alle energimålere" />
-      {q.isPending ? (
+      <PageHeader title="Totalt strømforbruk" subtitle="Hele eiendommens strømforbruk, målt av hovedmåleren" />
+      <div className="space-y-6">
+        <MainMeterSection />
         <div className="grid gap-6 lg:grid-cols-2">
-          <Skeleton className="h-[560px]" />
-          <Skeleton className="h-[560px]" />
+          <ChargerSummary />
         </div>
-      ) : q.isError ? (
-        <QueryError onRetry={() => q.refetch()} />
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {q.data.map((m) => (
-            <EnergyMeterCard key={m.id} meter={m} />
-          ))}
-        </div>
-      )}
+      </div>
     </>
   );
 }

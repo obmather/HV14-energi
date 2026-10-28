@@ -11,15 +11,23 @@ routeTree.addChildren(appRoutes);
 export const getRouter = () => {
   const queryClient = new QueryClient();
 
+  // Each deployed app already carries its own URL prefix (Vann "/vann", Energi
+  // "/energi") through the build's base path, so only the joint development
+  // preview has to translate between the two apps' internal route paths.
+  const isPreview = APP_MODE === "preview";
+
   const router = createRouter({
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
-    rewrite: {
-      input: ({ url }) => { url.pathname = internalPath(url.pathname); return url; },
-      output: ({ url }) => { url.pathname = publicPath(url.pathname); return url; },
-    },
+    basepath: isPreview ? "/" : APP_MODE === "water" ? "/vann" : "/",
+    rewrite: isPreview
+      ? {
+          input: ({ url }) => { url.pathname = internalPath(url.pathname); return url; },
+          output: ({ url }) => { url.pathname = publicPath(url.pathname); return url; },
+        }
+      : undefined,
   });
 
   return router;

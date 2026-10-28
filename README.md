@@ -23,6 +23,12 @@ npm run dev
 
 ## Built with
 
+## Independent HV14 applications
+
+Vann and Energi have separate build commands (`bun run build:water` and `bun run build:energy`) and deployment artifacts, using the same HV14 design system. See [separate build/deployment instructions](docs/independent-apps.md) for `/vann/`, legacy water URL compatibility, `/energi/`, and the relative `/energy/api/` base. No backend/database or Nginx deployment is performed by this project.
+
+## Technology
+
 - TanStack Start
 - TypeScript
 - React

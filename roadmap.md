@@ -11,3 +11,5 @@
 - [x] Add module-specific secondary navigation and working energy destinations; preserve existing URLs.
 - [x] Verify navigation, page metadata, and desktop/mobile layout.
 - [x] Real Easee charger data on Elbillading from /energy/api/v1.
+- [x] Remove the outdated Energi development banner; keep navigation, Overview and Easee data unchanged.
+- [x] Fix per-app base-path routing so every /vann/ and /energi/ page serves directly in the production builds.

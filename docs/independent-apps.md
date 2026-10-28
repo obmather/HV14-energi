@@ -35,9 +35,9 @@ No Nginx configuration is supplied, deployed or changed. The server operator han
 
 ## Verification and remaining work
 
-Tests check that water mode excludes energy routes, energy mode excludes water routes, the relative energy API base is correct, and migration URL mappings preserve existing destinations. The two-container build, Node runtime entry and reverse proxy behavior must still be validated on the host; nothing has been deployed from Lovable.
+Tests check that water mode excludes energy routes, energy mode excludes water routes, the relative energy API base is correct, migration URL mappings preserve existing destinations, and the deployed Energi app resolves addresses that arrive without its `/energi` base path. Each app's base path is applied by its build, and the server removes that prefix before routing; the app translates it back, so Nginx only has to forward the prefix unchanged. The two-container build, Node runtime entry and reverse proxy behavior must still be validated on the host; nothing has been deployed from Lovable.
 
-Energy readings remain explicitly simulated. The operator has confirmed that the Energi API is already operational through `/energy/api/` on Nginx. Its response contract has not been supplied to this frontend; the path is configured, but the current energy queries still return simulated readings. No additional backend or database is needed or created. Database access always remains behind the respective API.
+Charger measurements on Elbillading and in the Overview charging summary come from the operational Energi API (`/energy/api/v1`). Total consumption still awaits Aidon HAN: the main meter is marked "Ikke tilkoblet" and shows empty states, and no consumption values are simulated. The Energi app no longer shows a development banner; Vann keeps its own. Database access always remains behind the respective API.
 
 ## Source revision and GitHub handoff
 

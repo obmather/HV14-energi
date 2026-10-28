@@ -26,7 +26,7 @@ describe("Deployed Energi routing", () => {
       const { getRouter: buildRouter } = await import("@/router");
       const router = buildRouter();
       for (const [address, route] of [["/", "/energi"], ["/stromforbruk", "/energi/stromforbruk"]] as const) {
-        const location = router.parseLocation({ pathname: address, href: address, search: "", hash: "" });
+        const location = router.parseLocation({ pathname: address, href: address, search: "", hash: "", state: {} });
         expect(location.pathname, address).toBe(route);
         expect(router.matchRoutes(location.pathname).at(-1)?.routeId, address).not.toBe(rootRouteId);
       }

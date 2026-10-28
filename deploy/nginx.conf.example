@@ -1,0 +1,47 @@
+# Include these locations in the existing HV14 server block.
+# All four upstream services must be reachable from Nginx on the hv14 network.
+# Replace water-api:8000 / energy-api:8000 with actual API service names/ports.
+
+location = /energi {
+    proxy_pass http://energy-frontend:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+location ^~ /energi/ {
+    proxy_pass http://energy-frontend:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+# Preserve the existing water API path and prefix.
+location ^~ /api/ {
+    proxy_pass http://water-api:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+# Reserved for the future Energi API adapter. Assumes upstream owns /api/.
+location ^~ /energy-api/ {
+    proxy_pass http://energy-api:8000/api/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+# Both independently built apps use hashed assets. Serve the union of both
+# .output/public directories here; do not route energy assets to water.
+location ^~ /assets/ {
+    alias /srv/hv14/assets/;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
+location / {
+    proxy_pass http://water-frontend:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}

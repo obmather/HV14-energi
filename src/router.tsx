@@ -8,26 +8,56 @@ import { APP_MODE, internalPath, publicPath, routeBelongsToApp } from "./lib/app
 const appRoutes = Object.values(routeTree.children ?? {}).filter((route) => routeBelongsToApp(route.options.path ?? "/", APP_MODE));
 routeTree.addChildren(appRoutes);
 
+const ENERGY_PREFIX = "/energi";
+
+// The deployed Energi app is served from the "/energi" base path, so incoming
+// URLs arrive there without the prefix while the shared route tree keeps it.
+function energyInternalPath(pathname: string): string {
+  if (pathname === "/" || pathname === "") return ENERGY_PREFIX;
+  return pathname.startsWith(ENERGY_PREFIX) ? pathname : `${ENERGY_PREFIX}${pathname}`;
+}
+
+function energyPublicPath(pathname: string): string {
+  if (pathname === ENERGY_PREFIX) return "/";
+  return pathname.startsWith(`${ENERGY_PREFIX}/`) ? pathname.slice(ENERGY_PREFIX.length) : pathname;
+}
+
 export const getRouter = () => {
   const queryClient = new QueryClient();
 
-  // Each deployed app already carries its own URL prefix (Vann "/vann", Energi
-  // "/energi") through the build's base path, so only the joint development
-  // preview has to translate between the two apps' internal route paths.
-  const isPreview = APP_MODE === "preview";
+  // Only the joint development preview has to translate between the two apps'
+  // URL prefixes; each deployed app already owns one through its base path.
+  const rewrite =
+    APP_MODE === "preview"
+      ? {
+          input: ({ url }: { url: URL }) => {
+            url.pathname = internalPath(url.pathname);
+            return url;
+          },
+          output: ({ url }: { url: URL }) => {
+            url.pathname = publicPath(url.pathname);
+            return url;
+          },
+        }
+      : APP_MODE === "energy"
+        ? {
+            input: ({ url }: { url: URL }) => {
+              url.pathname = energyInternalPath(url.pathname);
+              return url;
+            },
+            output: ({ url }: { url: URL }) => {
+              url.pathname = energyPublicPath(url.pathname);
+              return url;
+            },
+          }
+        : undefined;
 
   const router = createRouter({
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
-    basepath: isPreview ? "/" : APP_MODE === "water" ? "/vann" : "/",
-    rewrite: isPreview
-      ? {
-          input: ({ url }) => { url.pathname = internalPath(url.pathname); return url; },
-          output: ({ url }) => { url.pathname = publicPath(url.pathname); return url; },
-        }
-      : undefined,
+    rewrite,
   });
 
   return router;

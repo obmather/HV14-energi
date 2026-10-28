@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:water": "VITE_HV14_APP=water NITRO_PRESET=node-server vite build",
+    "build:energy": "VITE_HV14_APP=energy NITRO_PRESET=node-server vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

@@ -13,6 +13,9 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/water/AppShell";
+import { APP_MODE } from "@/lib/app-mode";
+
+const appHome = APP_MODE === "energy" ? "/energi" : "/";
 
 function NotFoundComponent() {
   return (
@@ -25,7 +28,7 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            to="/"
+            to={appHome}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
@@ -63,7 +66,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             Try again
           </button>
           <a
-            href="/"
+            href={APP_MODE === "energy" ? "/energi/" : "/vann/"}
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Go home
@@ -79,8 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HV14 Water" },
-      { name: "description", content: "Overvåking av vannmålere og vannforbruk." },
+      { title: APP_MODE === "energy" ? "HV14 Energi" : "HV14 Water" },
+      { name: "description", content: APP_MODE === "energy" ? "Oversikt over energimålere og energiforbruk." : "Overvåking av vannmålere og vannforbruk." },
     ],
     links: [
       {

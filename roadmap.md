@@ -1,4 +1,9 @@
 # HV14 navigation
+- [x] Prepare /vann/ and /energi/ app paths while preserving legacy water URLs during migration.
+- [x] Configure the relative Energi API base /energy/api/ without creating an integration, backend or database.
+- [x] Provide independent build/deployment instructions only; do not deploy or change Nginx.
+- [x] Prepare separately deployable Vann and Energi dashboards behind Nginx, preserving water behavior and design.
+- [x] Verify app separation and document deployment limitations (host deployment remains operator-owned).
 - [x] Replace module-specific header branding and corner toggle with primary module navigation.
 - [x] Add module-specific secondary navigation and working energy destinations; preserve existing URLs.
 - [x] Verify navigation, page metadata, and desktop/mobile layout.

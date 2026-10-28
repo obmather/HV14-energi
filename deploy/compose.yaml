@@ -1,0 +1,26 @@
+services:
+  water-frontend:
+    build:
+      context: ..
+      args:
+        HV14_APP: water
+    restart: unless-stopped
+    expose:
+      - "3000"
+    networks:
+      - hv14
+
+  energy-frontend:
+    build:
+      context: ..
+      args:
+        HV14_APP: energy
+    restart: unless-stopped
+    expose:
+      - "3000"
+    networks:
+      - hv14
+
+networks:
+  hv14:
+    external: true

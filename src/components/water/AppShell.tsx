@@ -5,13 +5,14 @@ import { DevModeBanner } from "./status";
 import { EnergyDevBanner } from "@/components/energy/status";
 import { Button } from "@/components/ui/button";
 import { MODULES, moduleForPath, secondaryPath } from "@/lib/navigation";
+import { APP_MODE } from "@/lib/app-mode";
 
 const linkCls =
   "shrink-0 text-muted-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const selectedModule = moduleForPath(pathname);
+  const selectedModule = APP_MODE === "preview" ? moduleForPath(pathname) : MODULES[APP_MODE === "energy" ? 1 : 0];
   const activePath = secondaryPath(pathname);
   const isEnergi = selectedModule.id === "energy";
   return (
@@ -19,7 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {isEnergi ? <EnergyDevBanner /> : <DevModeBanner />}
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 sm:px-6">
-          <Link to="/" aria-label="HV14" className="flex shrink-0 items-center gap-2">
+          <Link to={selectedModule.to} aria-label="HV14" className="flex shrink-0 items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Waves className="h-4.5 w-4.5" />
             </span>
@@ -30,9 +31,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav aria-label="Moduler" className="flex min-w-0 gap-1 overflow-x-auto">
             {MODULES.map(({ id, to, label, icon: Icon }) => (
               <Button key={id} variant="ghost" asChild className={linkCls}>
-                <Link to={to} data-active={selectedModule.id === id} aria-current={selectedModule.id === id ? "true" : undefined}>
-                  <Icon />{label}
-                </Link>
+                {APP_MODE !== "preview" && selectedModule.id !== id ? (
+                  <a href={id === "water" ? "/vann/" : "/energi/"}><Icon />{label}</a>
+                ) : (
+                  <Link to={to} data-active={selectedModule.id === id} aria-current={selectedModule.id === id ? "true" : undefined}>
+                    <Icon />{label}
+                  </Link>
+                )}
               </Button>
             ))}
           </nav>

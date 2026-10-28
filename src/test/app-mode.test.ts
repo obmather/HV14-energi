@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENERGY_API_BASE, internalPath, publicPath, parseAppMode, routeBelongsToApp } from "@/lib/app-mode";
+import { ENERGY_API_BASE, energyInternalPath, energyPublicPath, internalPath, publicPath, parseAppMode, routeBelongsToApp } from "@/lib/app-mode";
 import { MODULES } from "@/lib/navigation";
 
 describe("Independent HV14 applications", () => {
@@ -19,6 +19,16 @@ describe("Independent HV14 applications", () => {
     expect(publicPath("/energi/enheter")).toBe("/energi/enheter");
     expect(internalPath("/energi/enheter")).toBe("/energi/enheter");
   });
+
+  it("translates Energi's base-stripped addresses to its own routes", () => {
+    expect(energyInternalPath("/")).toBe("/energi");
+    expect(energyInternalPath("/elbillading")).toBe("/energi/elbillading");
+    expect(energyInternalPath("/energi/enheter")).toBe("/energi/enheter");
+    expect(energyPublicPath("/energi")).toBe("/");
+    expect(energyPublicPath("/energi/stromforbruk")).toBe("/stromforbruk");
+    expect(energyPublicPath("/vann/historikk")).toBe("/vann/historikk");
+  });
+
 
   it("uses the required relative Energi API base", () => {
     expect(ENERGY_API_BASE).toBe("/energy/api/");

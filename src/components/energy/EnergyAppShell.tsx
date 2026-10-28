@@ -3,7 +3,6 @@ import { Waves } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MODULES, secondaryPath } from "@/lib/navigation";
-import { EnergyDevBanner } from "./status";
 
 // Keep the original Water header's dimensions and tokens without modifying Water.
 const linkCls =
@@ -15,7 +14,6 @@ export function EnergyAppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <EnergyDevBanner />
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
           <Link to="/energi" className="flex shrink-0 items-center gap-2" aria-label="HV14 Energi">

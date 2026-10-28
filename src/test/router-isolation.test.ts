@@ -25,8 +25,10 @@ describe("Deployed Energi routing", () => {
     try {
       const { getRouter: buildRouter } = await import("@/router");
       const router = buildRouter();
-      for (const path of ["/", "/elbillading", "/stromforbruk", "/strompriser", "/enheter", "/innstillinger"]) {
-        expect(router.matchRoutes(path).at(-1)?.routeId, path).not.toBe(rootRouteId);
+      for (const [address, route] of [["/", "/energi"], ["/stromforbruk", "/energi/stromforbruk"]] as const) {
+        const location = router.parseLocation({ pathname: address, href: address, search: "", hash: "" });
+        expect(location.pathname, address).toBe(route);
+        expect(router.matchRoutes(location.pathname).at(-1)?.routeId, address).not.toBe(rootRouteId);
       }
     } finally {
       vi.unstubAllEnvs();

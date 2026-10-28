@@ -1,6 +1,7 @@
 /**
- * HV14 Energi – data layer. No energy backend exists yet, so everything here
- * is deterministic simulated data and must be labeled "Simulert" in the UI.
+ * HV14 Energi – simulated data layer. The existing /energy/api/ backend is
+ * operational, but its response contract is not integrated here yet. All
+ * readings below are deterministic simulations labeled "Simulert" in the UI.
  */
 import { queryOptions } from "@tanstack/react-query";
 

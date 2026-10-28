@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/water/AppShell";
 import { QueryError } from "@/components/water/status";
-import { EnergyMockBadge } from "@/components/energy/status";
 import { energyMetersQuery } from "@/lib/energy/data";
 
 export const Route = createFileRoute("/energi/malepunkter")({
@@ -24,8 +23,7 @@ export function EnergyMeters({ title = "Målepunkter" }: { title?: string }) {
   const q = useQuery(energyMetersQuery());
   return (
     <>
-      <PageHeader title={title} subtitle="Registrerte energimålere">
-        <EnergyMockBadge />
+      <PageHeader title={title} subtitle="Målepunkter og fysiske målere">
       </PageHeader>
       {q.isPending ? (
         <Skeleton className="h-40" />
@@ -39,6 +37,8 @@ export function EnergyMeters({ title = "Målepunkter" }: { title?: string }) {
                 <th className="px-5 py-3 font-medium">Navn</th>
                 <th className="px-5 py-3 font-medium">Plassering</th>
                 <th className="px-5 py-3 font-medium">Type</th>
+                <th className="px-5 py-3 font-medium">Måler</th>
+                <th className="px-5 py-3 font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -47,6 +47,8 @@ export function EnergyMeters({ title = "Målepunkter" }: { title?: string }) {
                   <td className="px-5 py-3 font-medium">{m.name}</td>
                   <td className="px-5 py-3 text-muted-foreground">{m.location}</td>
                   <td className="px-5 py-3">{m.type}</td>
+                  <td className="px-5 py-3">{m.manufacturer ?? "–"}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{m.connected ? "Tilkoblet" : "Ikke tilkoblet"}</td>
                 </tr>
               ))}
             </tbody>

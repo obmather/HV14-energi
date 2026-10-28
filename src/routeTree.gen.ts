@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HistorikkRouteImport } from './routes/historikk'
 import { Route as InnstillingerRouteImport } from './routes/innstillinger'
+import { Route as EnergiIndexRouteImport } from './routes/energi.index'
+import { Route as EnergiHistorikkRouteImport } from './routes/energi.historikk'
+import { Route as EnergiMalepunkterRouteImport } from './routes/energi.malepunkter'
 import { Route as MalepunkterIndexRouteImport } from './routes/malepunkter.index'
 import { Route as MalepunkterMeterIdRouteImport } from './routes/malepunkter.$meterId'
 
@@ -30,6 +33,21 @@ const InnstillingerRoute = InnstillingerRouteImport.update({
   path: '/innstillinger',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnergiIndexRoute = EnergiIndexRouteImport.update({
+  id: '/energi/',
+  path: '/energi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnergiHistorikkRoute = EnergiHistorikkRouteImport.update({
+  id: '/energi/historikk',
+  path: '/energi/historikk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnergiMalepunkterRoute = EnergiMalepunkterRouteImport.update({
+  id: '/energi/malepunkter',
+  path: '/energi/malepunkter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MalepunkterIndexRoute = MalepunkterIndexRouteImport.update({
   id: '/malepunkter/',
   path: '/malepunkter/',
@@ -45,14 +63,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/historikk': typeof EnergiHistorikkRoute
+  '/energi/malepunkter': typeof EnergiMalepunkterRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/energi/': typeof EnergiIndexRoute
   '/malepunkter/': typeof MalepunkterIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/historikk': typeof EnergiHistorikkRoute
+  '/energi/malepunkter': typeof EnergiMalepunkterRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/energi': typeof EnergiIndexRoute
   '/malepunkter': typeof MalepunkterIndexRoute
 }
 export interface FileRoutesById {
@@ -60,7 +84,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/historikk': typeof HistorikkRoute
   '/innstillinger': typeof InnstillingerRoute
+  '/energi/historikk': typeof EnergiHistorikkRoute
+  '/energi/malepunkter': typeof EnergiMalepunkterRoute
   '/malepunkter/$meterId': typeof MalepunkterMeterIdRoute
+  '/energi/': typeof EnergiIndexRoute
   '/malepunkter/': typeof MalepunkterIndexRoute
 }
 export interface FileRouteTypes {
@@ -69,21 +96,30 @@ export interface FileRouteTypes {
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/historikk'
+    | '/energi/malepunkter'
     | '/malepunkter/$meterId'
+    | '/energi/'
     | '/malepunkter/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/historikk'
+    | '/energi/malepunkter'
     | '/malepunkter/$meterId'
+    | '/energi'
     | '/malepunkter'
   id:
     | '__root__'
     | '/'
     | '/historikk'
     | '/innstillinger'
+    | '/energi/historikk'
+    | '/energi/malepunkter'
     | '/malepunkter/$meterId'
+    | '/energi/'
     | '/malepunkter/'
   fileRoutesById: FileRoutesById
 }
@@ -91,7 +127,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistorikkRoute: typeof HistorikkRoute
   InnstillingerRoute: typeof InnstillingerRoute
+  EnergiHistorikkRoute: typeof EnergiHistorikkRoute
+  EnergiMalepunkterRoute: typeof EnergiMalepunkterRoute
   MalepunkterMeterIdRoute: typeof MalepunkterMeterIdRoute
+  EnergiIndexRoute: typeof EnergiIndexRoute
   MalepunkterIndexRoute: typeof MalepunkterIndexRoute
 }
 
@@ -118,6 +157,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InnstillingerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/energi/': {
+      id: '/energi/'
+      path: '/energi'
+      fullPath: '/energi/'
+      preLoaderRoute: typeof EnergiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/energi/historikk': {
+      id: '/energi/historikk'
+      path: '/energi/historikk'
+      fullPath: '/energi/historikk'
+      preLoaderRoute: typeof EnergiHistorikkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/energi/malepunkter': {
+      id: '/energi/malepunkter'
+      path: '/energi/malepunkter'
+      fullPath: '/energi/malepunkter'
+      preLoaderRoute: typeof EnergiMalepunkterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/malepunkter/': {
       id: '/malepunkter/'
       path: '/malepunkter'
@@ -139,7 +199,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistorikkRoute: HistorikkRoute,
   InnstillingerRoute: InnstillingerRoute,
+  EnergiHistorikkRoute: EnergiHistorikkRoute,
+  EnergiMalepunkterRoute: EnergiMalepunkterRoute,
   MalepunkterMeterIdRoute: MalepunkterMeterIdRoute,
+  EnergiIndexRoute: EnergiIndexRoute,
   MalepunkterIndexRoute: MalepunkterIndexRoute,
 }
 export const routeTree = rootRouteImport

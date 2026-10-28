@@ -166,4 +166,25 @@ export const apiSource: DataSource = {
     const data = await getJson(`/api/consumption?channel_id=${enc(channelId)}&period=daily&limit=${limit}`);
     return asList(data).map(normalizeDaily).filter((r): r is DailyConsumption => r !== null);
   },
+  async getMeterStatus(id) {
+    try {
+      const raw = await getJson(`/api/meters/${enc(id)}/status`);
+      if (!isObj(raw)) return null;
+      const n = (k: string) => num(raw[k]);
+      return {
+        meterId: id,
+        serialNumber: str(raw["serial_number"]),
+        available: true,
+        receivedAt: parseDate(pick(raw, ["received_at"])),
+        raw: n("raw"),
+        lowBattery: raw["low_battery"] === true,
+        permanentError: raw["permanent_error"] === true,
+        temporaryError: str(raw["temporary_error"]),
+        unknownBits: n("unknown_bits") ?? 0,
+      } satisfies MeterStatus;
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return null;
+      throw e;
+    }
+  },
 };

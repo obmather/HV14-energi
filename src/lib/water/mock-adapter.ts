@@ -91,4 +91,7 @@ export const mockSource: DataSource = {
       }));
     return delay(rows);
   },
+  async getMeterStatus() {
+    return delay(null);
+  },
 };

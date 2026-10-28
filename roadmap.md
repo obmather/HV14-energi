@@ -1,4 +1,5 @@
 # HV14 navigation
+- [ ] Match Energi to the original single-row Water header without changing Water or Easee; add its settings destination and verify navigation.
 - [x] Identify the local separation revision, exact build commands/artifacts, and confirm water regression checks.
 - [ ] Confirm separation is available on GitHub main; blocked on Git sync status/branch verification in Project settings → Git.
 - [x] Prepare /vann/ and /energi/ app paths while preserving legacy water URLs during migration.
@@ -8,4 +9,5 @@
 - [x] Verify app separation and document deployment limitations (host deployment remains operator-owned).
 - [x] Replace module-specific header branding and corner toggle with primary module navigation.
 - [x] Add module-specific secondary navigation and working energy destinations; preserve existing URLs.
-- [x] Verify navigation, page metadata, and desktop/mobile layout.- [x] Real Easee charger data on Elbillading from /energy/api/v1.
+- [x] Verify navigation, page metadata, and desktop/mobile layout.
+- [x] Real Easee charger data on Elbillading from /energy/api/v1.

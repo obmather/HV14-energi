@@ -20,11 +20,11 @@ export const Route = createFileRoute("/energi/malepunkter")({
   component: EnergyMeters,
 });
 
-function EnergyMeters() {
+export function EnergyMeters({ title = "Målepunkter" }: { title?: string }) {
   const q = useQuery(energyMetersQuery());
   return (
     <>
-      <PageHeader title="Målepunkter" subtitle="Registrerte energimålere">
+      <PageHeader title={title} subtitle="Registrerte energimålere">
         <EnergyMockBadge />
       </PageHeader>
       {q.isPending ? (

@@ -19,5 +19,5 @@
 - Daily consumption comes from backend `/api/consumption` (quality_status preserved); hourly is derived from register differences. Why: backend is authoritative for consumption; register diffs avoid double-counting instant+hourly readings.
 - Measurement points are authoritative for names and meter→channel links; meters and measurement points stay separate types. Why: backend contract.
 - Production uses same-origin `/api` requests (empty base URL), no CORS. Why: runs in Docker behind a proxy on the private server.
-- HV14 is one shared frontend with modules: Vann at `/` (code in `src/{lib,components}/water`) and Energi under `/energi` (`src/{lib,components}/energy`). `AppShell` picks module nav from the URL. Why: shared design system, separate functionality.
+- HV14 is one shared frontend with modules: Vann at `/` and Energi under `/energi`; `src/lib/navigation.ts` defines modules, secondary destinations and legacy active-path aliases, and `AppShell` renders both navigation levels from the URL. Why: scalable navigation with one source of truth and preserved existing URLs.
 - Energi has no backend yet; its data is simulated in `src/lib/energy/data.ts` and always labeled "Simulert". Why: mock must never look like live readings.

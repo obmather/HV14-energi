@@ -26,13 +26,13 @@ const RANGES = [7, 30, 90] as const;
 const btn =
   "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-accent-foreground";
 
-function EnergyHistory() {
+export function EnergyHistory({ title = "Historikk" }: { title?: string }) {
   const [meterId, setMeterId] = useState(ENERGY_METERS[0]!.id);
   const [days, setDays] = useState<number>(30);
   const q = useQuery(energyDaysQuery(meterId, days));
   return (
     <>
-      <PageHeader title="Historikk" subtitle="Energiforbruk over tid">
+      <PageHeader title={title} subtitle="Energiforbruk over tid">
         <EnergyMockBadge />
       </PageHeader>
       <section className="surface space-y-5 p-5 sm:p-6">

@@ -8,4 +8,4 @@
 - [x] Verify app separation and document deployment limitations (host deployment remains operator-owned).
 - [x] Replace module-specific header branding and corner toggle with primary module navigation.
 - [x] Add module-specific secondary navigation and working energy destinations; preserve existing URLs.
-- [x] Verify navigation, page metadata, and desktop/mobile layout.
+- [x] Verify navigation, page metadata, and desktop/mobile layout.- [x] Real Easee charger data on Elbillading from /energy/api/v1.

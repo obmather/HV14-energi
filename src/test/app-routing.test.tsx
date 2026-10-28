@@ -19,8 +19,8 @@ describe("App routing", () => {
     expect(MODULES[0].nav.map(({ to }) => to)).toEqual(["/", "/malepunkter", "/historikk", "/innstillinger"]);
   });
 
-  it("provides the five energy destinations", () => {
-    expect(MODULES[1].nav.map(({ to }) => to)).toEqual(["/energi", "/energi/elbillading", "/energi/stromforbruk", "/energi/strompriser", "/energi/enheter"]);
+  it("provides the six energy destinations including independent settings", () => {
+    expect(MODULES[1].nav.map(({ to }) => to)).toEqual(["/energi", "/energi/elbillading", "/energi/stromforbruk", "/energi/strompriser", "/energi/enheter", "/energi/innstillinger"]);
   });
 
   it("matches all navigation destinations and preserves legacy URLs", () => {

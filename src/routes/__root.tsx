@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -13,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/water/AppShell";
+import { EnergyAppShell } from "@/components/energy/EnergyAppShell";
 import { APP_MODE } from "@/lib/app-mode";
 
 const appHome = APP_MODE === "energy" ? "/energi" : "/";
@@ -121,13 +123,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isEnergy = APP_MODE === "energy" || (APP_MODE === "preview" && (pathname === "/energi" || pathname.startsWith("/energi/")));
+  const Shell = isEnergy ? EnergyAppShell : AppShell;
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <AppShell>
+      <Shell>
         <Outlet />
-      </AppShell>
+      </Shell>
     </QueryClientProvider>
   );
 }

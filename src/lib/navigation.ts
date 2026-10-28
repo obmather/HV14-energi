@@ -13,6 +13,7 @@ const ENERGY_NAV = [
   { to: "/energi/stromforbruk", label: "Strømforbruk", icon: BarChart3, exact: false },
   { to: "/energi/strompriser", label: "Strømpriser", icon: CircleDollarSign, exact: false },
   { to: "/energi/enheter", label: "Enheter", icon: Cpu, exact: false },
+  { to: "/energi/innstillinger", label: "Innstillinger", icon: Settings, exact: false },
 ] as const;
 
 export const MODULES = [

@@ -67,30 +67,30 @@ async function getJson(path: string, fetchImpl: typeof fetch = fetch): Promise<u
 }
 
 export function parseDeviceStates(data: unknown): DeviceState[] {
-  if (!isObj(data) || !Array.isArray(data.devices)) throw new Error("Ugyldig svar");
-  return data.devices.filter(isObj).flatMap((d) => {
-    const deviceId = str(d.device_id);
+  if (!isObj(data) || !Array.isArray(data['devices'])) throw new Error("Ugyldig svar");
+  return data['devices'].filter(isObj).flatMap((d) => {
+    const deviceId = str(d['device_id']);
     if (!deviceId) return [];
-    return [{ deviceId, name: str(d.name) ?? deviceId, state: str(d.state), reportedAt: date(d.reported_at), receivedAt: date(d.received_at) }];
+    return [{ deviceId, name: str(d['name']) ?? deviceId, state: str(d['state']), reportedAt: date(d['reported_at']), receivedAt: date(d['received_at']) }];
   });
 }
 
 export function parseMeasurements(data: unknown): Measurement[] {
-  if (!isObj(data) || !Array.isArray(data.measurements)) throw new Error("Ugyldig svar");
-  return data.measurements.filter(isObj).flatMap((m) => {
-    const deviceId = str(m.device_id);
-    const type = str(m.measurement_type);
+  if (!isObj(data) || !Array.isArray(data['measurements'])) throw new Error("Ugyldig svar");
+  return data['measurements'].filter(isObj).flatMap((m) => {
+    const deviceId = str(m['device_id']);
+    const type = str(m['measurement_type']);
     if (!deviceId || !type) return [];
     return [{
-      id: num(m.id), deviceId, type, value: num(m.value), unit: str(m.unit),
-      measuredAt: date(m.measured_at), receivedAt: date(m.received_at), quality: str(m.quality),
+      id: num(m['id']), deviceId, type, value: num(m['value']), unit: str(m['unit']),
+      measuredAt: date(m['measured_at']), receivedAt: date(m['received_at']), quality: str(m['quality']),
     }];
   });
 }
 
 export function parseSystemStatus(data: unknown): SystemStatus {
   if (!isObj(data)) throw new Error("Ugyldig svar");
-  return { status: str(data.status), database: str(data.database), deviceCount: num(data.device_count), measurementCount: num(data.measurement_count) };
+  return { status: str(data['status']), database: str(data['database']), deviceCount: num(data['device_count']), measurementCount: num(data['measurement_count']) };
 }
 
 const latest = (a: Date | null, b: Date | null) => (!a ? b : !b ? a : a > b ? a : b);

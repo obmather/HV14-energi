@@ -1,5 +1,5 @@
 # HV14 navigation
-- [ ] Match Energi to the original single-row Water header without changing Water or Easee; add its settings destination and verify navigation.
+- [x] Match Energi to the original single-row Water header without changing Water or Easee behavior; add its settings destination and verify navigation.
 - [x] Identify the local separation revision, exact build commands/artifacts, and confirm water regression checks.
 - [ ] Confirm separation is available on GitHub main; blocked on Git sync status/branch verification in Project settings → Git.
 - [x] Prepare /vann/ and /energi/ app paths while preserving legacy water URLs during migration.

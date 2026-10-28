@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {MODULES.map(({ id, to, label, icon: Icon }) => (
               <Button key={id} variant="ghost" asChild className={linkCls}>
                 {APP_MODE !== "preview" && selectedModule.id !== id ? (
-                  <a href={to}><Icon />{label}</a>
+                  <a href={id === "water" ? "/vann/" : "/energi/"}><Icon />{label}</a>
                 ) : (
                   <Link to={to} data-active={selectedModule.id === id} aria-current={selectedModule.id === id ? "true" : undefined}>
                     <Icon />{label}

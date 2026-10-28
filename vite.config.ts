@@ -8,6 +8,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   // Self-hosted builds select the Node target through NITRO_PRESET.
+  vite: {
+    base: process.env['VITE_HV14_APP'] === 'water' ? '/vann/' : process.env['VITE_HV14_APP'] === 'energy' ? '/energi/' : '/',
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

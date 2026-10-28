@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENERGY_API_BASE, internalPath, publicPath, parseAppMode, routeBelongsToApp } from "@/lib/app-mode";
+import { ENERGY_API_BASE, energyInternalPath, energyPublicPath, internalPath, publicPath, parseAppMode, routeBelongsToApp } from "@/lib/app-mode";
 import { MODULES } from "@/lib/navigation";
 
 describe("Independent HV14 applications", () => {

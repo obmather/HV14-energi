@@ -15,7 +15,6 @@ export function EnergyAppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <EnergyDevBanner />
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
           <Link to="/energi" className="flex shrink-0 items-center gap-2" aria-label="HV14 Energi">

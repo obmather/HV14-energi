@@ -37,4 +37,31 @@ No Nginx configuration is supplied, deployed or changed. The server operator han
 
 Tests check that water mode excludes energy routes, energy mode excludes water routes, the relative energy API base is correct, and migration URL mappings preserve existing destinations. The two-container build, Node runtime entry and reverse proxy behavior must still be validated on the host; nothing has been deployed from Lovable.
 
-Energy readings remain explicitly simulated. No Energi API contract has been supplied; `/energy/api/` is configured as the base path, not an implemented data integration. No backend or database is created. Database access always remains behind the respective API.
+Energy readings remain explicitly simulated. The operator has confirmed that the Energi API is already operational through `/energy/api/` on Nginx. Its response contract has not been supplied to this frontend; the path is configured, but the current energy queries still return simulated readings. No additional backend or database is needed or created. Database access always remains behind the respective API.
+
+## Source revision and GitHub handoff
+
+The separation is present in the local Lovable source history at commit `9c8af9089f60da21a86ec9e0a4f112b1ffc6b4cf` (`Split HV14 frontends`). Both frontends are in this same source tree, not in a newly created energy repository. Energy files include `src/routes/energi.*.tsx`, `src/components/energy/`, and `src/lib/energy/`; app selection and the relative API base are in `src/lib/app-mode.ts`.
+
+This local commit is not proof that GitHub `origin/main` received it. On 2026-10-28, unauthenticated access to the repository's GitHub API returned 404 and no authenticated GitHub connector was available. Git sync status and the connected repository/branch must be checked in Lovable **Project settings → Git**. The agent cannot manually commit, push, connect a repository, or switch the synced branch. If this work is in a draft, it must be accepted before normal sync; if the status reports divergence, merge the newest `lovable-sync*` branch into the synced branch on GitHub rather than resetting or overwriting existing water work.
+
+After sync is resolved, the server operator can verify the repository read-only:
+
+```sh
+git ls-remote origin refs/heads/main
+git show origin/main:src/lib/app-mode.ts
+git show origin/main:package.json
+```
+
+These inspect the remote head and locally fetched remote-tracking source respectively; `git show origin/main:...` only reflects the server's latest fetch. If `main` still points to `d7b01a8` and lacks the energy files, do not deploy that revision as the separated applications.
+
+### Exact artifacts for Docker
+
+| Application | Build command after dependency installation | Output | Runtime entry |
+| --- | --- | --- | --- |
+| Vann | `bun run build:water` | `.output/` in the Vann build workspace | `.output/server/index.mjs` |
+| Energi | `bun run build:energy` | `.output/` in the Energi build workspace | `.output/server/index.mjs` |
+
+Neither app produces a separate `dist/water` or `dist/energy` directory. Both use `.output/`, including `.output/public/` static files and `.output/server/` runtime files. Copy the **entire** `.output/` into each runtime image, not just static files. The supplied Dockerfile already does this; Compose builds each app in an isolated image build using `HV14_APP=water` or `HV14_APP=energy`.
+
+The existing water status adapter (`getMeterStatus`, `/api/meters/{id}/status`) remains present. App separation did not add a status display; the endpoint mapping still requires confirmation against the water API contract. Frontend regression checks do not establish live server compatibility or a successful Docker deployment.

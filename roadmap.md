@@ -1,4 +1,6 @@
 # HV14 navigation
+- [x] Identify the local separation revision, exact build commands/artifacts, and confirm water regression checks.
+- [ ] Confirm separation is available on GitHub main; blocked on Git sync status/branch verification in Project settings → Git.
 - [x] Prepare /vann/ and /energi/ app paths while preserving legacy water URLs during migration.
 - [x] Configure the relative Energi API base /energy/api/ without creating an integration, backend or database.
 - [x] Provide independent build/deployment instructions only; do not deploy or change Nginx.

@@ -3,7 +3,6 @@ import { Waves } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MODULES, secondaryPath } from "@/lib/navigation";
-import { EnergyDevBanner } from "./status";
 
 // Keep the original Water header's dimensions and tokens without modifying Water.
 const linkCls =

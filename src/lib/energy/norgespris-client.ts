@@ -13,6 +13,17 @@ export interface NorgesprisSummary { status: NorgesprisStatus; verifiedHours: nu
 export interface NorgesprisHour { startIso: string; endIso: string; consumptionKwh: number | null; spotNokKwhExVat: number | null; adjustmentNokExVat: number | null; status: string }
 export interface NorgesprisMonth { status: NorgesprisStatus; hours: NorgesprisHour[] }
 export class NorgesprisResponseError extends Error {}
+export class NorgesprisHttpError extends Error { constructor(public status: number) { super(`HTTP ${status}`); } }
+export function norgesprisErrorMessage(e: unknown): string {
+  if (e instanceof NorgesprisResponseError) return "Norgespris-data har et ukjent eller ugyldig format.";
+  if (e instanceof NorgesprisHttpError) {
+    if (e.status === 403) return "Ingen tilgang til Norgespris-data (HTTP 403).";
+    if (e.status === 422) return "API-et avviste forespørselen for valgt måned (HTTP 422).";
+    if (e.status >= 500) return `Feil i Norgespris-tjenesten (HTTP ${e.status}). Prøv igjen senere.`;
+    return `Norgespris-tjenesten svarte med en feil (HTTP ${e.status}).`;
+  }
+  return "Kunne ikke kontakte Norgespris-tjenesten.";
+}
 
 const obj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const num = (v: unknown): number | null => {
@@ -60,14 +71,14 @@ async function get(path: "summary" | "month", month: string, fetchImpl: typeof f
   const qs = new URLSearchParams({ start_utc, end_utc, device_id: NORGESPRIS_DEVICE, price_area: NORGESPRIS_AREA });
   const res = await fetchImpl(`${ENERGY_API_V1}/norgespris/${path}?${qs}`, { headers: { Accept: "application/json" } });
   if (res.status === 404 || res.status === 204) return null;
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw new NorgesprisHttpError(res.status);
   return res.json();
 }
 export const norgesprisSummaryQuery = (month: string) => queryOptions({
   queryKey: ["hv14", "energi", "norgespris", "summary", month],
-  queryFn: async () => { const v = await get("summary", month); return v === null ? null : parseSummary(v); }, retry: 1,
+  queryFn: async () => { const v = await get("summary", month); return v === null ? null : parseSummary(v); }, retry: (n, e) => !(e instanceof NorgesprisHttpError && e.status < 500) && n < 1,
 });
 export const norgesprisMonthQuery = (month: string) => queryOptions({
   queryKey: ["hv14", "energi", "norgespris", "month", month],
-  queryFn: async () => { const v = await get("month", month); return v === null ? null : parseMonth(v); }, retry: 1,
+  queryFn: async () => { const v = await get("month", month); return v === null ? null : parseMonth(v); }, retry: (n, e) => !(e instanceof NorgesprisHttpError && e.status < 500) && n < 1,
 });

@@ -4,7 +4,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime, formatNumber } from "@/lib/water/format";
-import { norgesprisMonthQuery, norgesprisSummaryQuery, NorgesprisResponseError } from "@/lib/energy/norgespris-client";
+import { norgesprisErrorMessage, norgesprisMonthQuery, norgesprisSummaryQuery } from "@/lib/energy/norgespris-client";
 
 const DASH = "—";
 const kr = (n: number | null) => (n == null ? DASH : `${formatNumber(n, 2)} kr`);
@@ -14,7 +14,7 @@ const date = (iso: string | null) => (iso ? new Intl.DateTimeFormat("nb-NO", { t
 
 function ErrorBox({ error, retry }: { error: unknown; retry: () => void }) {
   return <div role="alert" className="flex flex-col items-center gap-3 py-8 text-center">
-    <p className="text-sm">{error instanceof NorgesprisResponseError ? "Norgespris-data har et ukjent eller ugyldig format." : "Kunne ikke hente Norgespris-data. Tjenesten er utilgjengelig eller svarte med en feil."}</p>
+    <p className="text-sm">{norgesprisErrorMessage(error)}</p>
     <Button variant="outline" size="sm" onClick={retry}><RefreshCw className="mr-2 h-4 w-4" />Prøv igjen</Button>
   </div>;
 }
@@ -46,9 +46,9 @@ export function NorgesprisPanel() {
       <dl className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-lg border border-border p-4"><dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Datastatus</dt>
           <dd className={`mt-1.5 text-lg font-semibold ${complete ? "" : "text-warning"}`}>{label(s.status)}</dd>
-          <p className="text-xs text-muted-foreground">Verifiserte timer: {s.verifiedHours == null ? DASH : formatNumber(s.verifiedHours, 0)}{s.expectedHours != null && ` av ${formatNumber(s.expectedHours, 0)}`}</p></div>
+          <p className="text-xs text-muted-foreground">Antall timer: {s.expectedHours == null ? DASH : formatNumber(s.expectedHours, 0)} · Verifiserte timer: {s.verifiedHours == null ? DASH : formatNumber(s.verifiedHours, 0)}</p></div>
         <div className="rounded-lg border border-border p-4"><dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Norgesprisjustering</dt>
-          <dd className="mt-1.5 text-lg font-semibold tabular">{complete ? kr(s.adjustmentNokExVat) : DASH}</dd>
+          <dd className="mt-1.5 text-lg font-semibold tabular">{complete && s.adjustmentNokExVat != null ? kr(s.adjustmentNokExVat) : DASH}</dd>
           <p className="text-xs text-muted-foreground">Eks. mva. · justering for valgt måned, ikke total besparelse på strømregningen</p></div>
       </dl>
     </>}

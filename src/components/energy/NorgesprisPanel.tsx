@@ -55,14 +55,15 @@ export function NorgesprisPanel() {
       </dl>
     </>}
     {!complete && prov && prov.calculatedHours > 0 && <div className="rounded-lg border border-border p-4">
-      <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Foreløpig Norgespris-justering denne måneden</h3>
+      <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Foreløpig gevinst mot spotpris denne måneden</h3>
+      <p className="mt-1 text-xs text-muted-foreground">Viser forskjellen mellom Norgespris og spotpris for dokumentert strømforbruk. Beløpet er ekskl. mva. og tar ikke hensyn til alternativ ordinær strømstøtte.</p>
       <dl className="mt-3 grid gap-4 sm:grid-cols-4">
         <div><dt className="text-xs text-muted-foreground">Samlet justering</dt><dd className="mt-1 text-lg font-semibold tabular">{signedKr(prov.adjustmentNokExVat)}</dd><p className="text-xs text-muted-foreground">Eks. mva. · Foreløpig</p></div>
         <div><dt className="text-xs text-muted-foreground">Dokumentert forbruk</dt><dd className="mt-1 text-lg font-semibold tabular">{prov.kwh == null ? DASH : `${formatNumber(prov.kwh, 2)} kWh`}</dd></div>
         <div><dt className="text-xs text-muted-foreground">Timer med beregnet beløp</dt><dd className="mt-1 text-lg font-semibold tabular">{formatNumber(prov.calculatedHours, 0)}</dd></div>
         <div><dt className="text-xs text-muted-foreground">Timer uten tilstrekkelige data</dt><dd className="mt-1 text-lg font-semibold tabular">{formatNumber(prov.missingHours, 0)}</dd></div>
       </dl>
-      <p className="mt-3 text-xs text-warning">Foreløpig beregning – ikke et verifisert månedsoppgjør.</p>
+      <p className="mt-3 text-xs text-warning">Foreløpig – ikke et verifisert månedsoppgjør.</p>
     </div>}
     <details className="border-t border-border pt-4">
       <summary className="cursor-pointer text-sm font-medium">Timeoversikt</summary>

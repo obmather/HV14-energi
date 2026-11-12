@@ -45,7 +45,7 @@ export function parseMonth(v: unknown): NorgesprisMonth {
 
 /** Oslo calendar month [start, end) for "YYYY-MM", as timezone-qualified UTC ISO strings. */
 export function monthRange(month: string) {
-  const [y, m] = month.split("-").map(Number);
+  const [y = 1970, m = 1] = month.split("-").map(Number);
   const probe = new Date(Date.UTC(y, m - 1, 1, 12));
   const offset = new Intl.DateTimeFormat("en", { timeZone: "Europe/Oslo", timeZoneName: "shortOffset" }).formatToParts(probe).find((p) => p.type === "timeZoneName")?.value ?? "GMT+1";
   const hours = Number(offset.replace("GMT", "") || 0);

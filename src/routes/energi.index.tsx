@@ -4,7 +4,9 @@ import { BarChart3, ChevronRight, Gauge, PlugZap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/water/AppShell";
 import { formatDateTime, formatNumber, formatRelative } from "@/lib/water/format";
-import { MAIN_METER } from "@/lib/energy/data";
+import { formatKwh, MAIN_METER } from "@/lib/energy/data";
+import { hourlyConsumptionQuery, mainMeterLatestQuery, type HourlyConsumption } from "@/lib/energy/aidon-client";
+import { CoverageNote, HourlyChart } from "@/components/energy/HourlyConsumptionPanel";
 import { chargersQuery, isStale, stateLabel } from "@/lib/energy/easee-client";
 
 export const Route = createFileRoute("/energi/")({
@@ -26,15 +28,36 @@ function Pill({ tone, children }: { tone: "ok" | "warn" | "muted"; children: Rea
   return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${cls}`}>{children}</span>;
 }
 
-const KPIS = [
-  { label: "Effekt nå", unit: "kW" },
-  { label: "Forbruk i dag", unit: "kWh" },
-  { label: "Forbruk denne måneden", unit: "kWh" },
-  { label: "Målerstand", unit: "kWh" },
-];
+function Kpi({ label, value, note }: { label: string; value: React.ReactNode; note?: string | null }) {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="mt-1.5 text-xl font-semibold tabular">{value}</dd>
+      {note && <p className="mt-1 text-xs text-warning">{note}</p>}
+    </div>
+  );
+}
+
+const waiting = <span className="text-sm font-normal text-muted-foreground">Mangler data</span>;
+const sumNote = (d: HourlyConsumption | undefined) =>
+  d && (!d.completePeriod || d.missingHours) ? `Ufullstendig: ${d.validHours ?? 0} av ${d.expectedHours ?? "?"} timer` : null;
 
 function MainMeterSection() {
   const m = MAIN_METER;
+  const latest = useQuery(mainMeterLatestQuery());
+  const today = useQuery(hourlyConsumptionQuery("today"));
+  const month = useQuery(hourlyConsumptionQuery("month"));
+  const live = latest.data;
+  const hasLive = !!(live?.powerKw?.value != null || live?.energyTotalKwh?.value != null);
+  const hasHistory = (today.data?.validHours ?? 0) > 0;
+  // Status is derived from real API data only.
+  const status = latest.isPending && today.isPending
+    ? null
+    : hasLive && !isStale(live!.lastReceivedAt)
+      ? { tone: "ok" as const, text: "Tilkoblet" }
+      : hasLive || hasHistory
+        ? { tone: "warn" as const, text: "Ingen ferske sanntidsdata" }
+        : { tone: "muted" as const, text: "Ingen data mottatt" };
   return (
     <section className="surface flex flex-col gap-5 p-5 sm:p-6" aria-labelledby="main-meter">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -47,22 +70,25 @@ function MainMeterSection() {
             <p className="text-sm text-muted-foreground">Måler: {m.manufacturer} · {m.description}</p>
           </div>
         </div>
-        <Pill tone={m.connected ? "ok" : "muted"}>{m.connected ? "Tilkoblet" : "Ikke tilkoblet"}</Pill>
+        {status && <Pill tone={status.tone}>{status.text}</Pill>}
       </header>
       <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {KPIS.map((k) => (
-          <div key={k.label} className="rounded-lg border border-border p-4">
-            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{k.label} ({k.unit})</dt>
-            <dd className="mt-1.5 text-sm text-muted-foreground">Venter på måledata</dd>
-          </div>
-        ))}
+        <Kpi label="Effekt nå" value={live?.powerKw?.value != null ? `${formatNumber(live.powerKw.value, 2)} ${live.powerKw.unit ?? "kW"}` : waiting} />
+        <Kpi label="Forbruk i dag" value={today.data?.totalKwh != null && hasHistory ? formatKwh(today.data.totalKwh, 2) : waiting} note={hasHistory ? sumNote(today.data) : null} />
+        <Kpi label="Forbruk denne måneden" value={month.data?.totalKwh != null && (month.data.validHours ?? 0) > 0 ? formatKwh(month.data.totalKwh, 1) : waiting} note={(month.data?.validHours ?? 0) > 0 ? sumNote(month.data) : null} />
+        <Kpi label="Målerstand" value={live?.energyTotalKwh?.value != null ? `${formatNumber(live.energyTotalKwh.value, 1)} ${live.energyTotalKwh.unit ?? "kWh"}` : waiting} />
       </dl>
+      {live?.lastReceivedAt && <p className="-mt-2 text-xs text-muted-foreground">Sanntid sist mottatt {formatDateTime(live.lastReceivedAt)} ({formatRelative(live.lastReceivedAt)})</p>}
       <div className="border-t border-border pt-4">
-        <h3 className="mb-3 text-sm font-semibold">Strømforbruk over tid</h3>
-        <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-center text-sm text-muted-foreground">
-          <BarChart3 className="h-5 w-5" />
-          Historiske målinger blir tilgjengelige når hovedmåleren er tilkoblet.
-        </div>
+        <h3 className="mb-3 text-sm font-semibold">Timeforbruk i dag</h3>
+        {today.isPending ? <Skeleton className="h-52" /> : today.isError || !hasHistory ? (
+          <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-center text-sm text-muted-foreground">
+            <BarChart3 className="h-5 w-5" />
+            {today.isError ? "Timeforbruk er utilgjengelig akkurat nå." : "Ingen timemålinger for i dag ennå."}
+          </div>
+        ) : (
+          <div className="space-y-3"><CoverageNote d={today.data} /><HourlyChart hours={today.data.hours} multiDay={false} /></div>
+        )}
       </div>
     </section>
   );

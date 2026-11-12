@@ -54,7 +54,7 @@ const date = (v: unknown) => {
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-async function getJson(path: string, fetchImpl: typeof fetch = fetch): Promise<unknown> {
+export async function getJson(path: string, fetchImpl: typeof fetch = fetch): Promise<unknown> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {

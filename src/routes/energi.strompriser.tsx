@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EnergyUnavailable } from "@/components/energy/EnergyUnavailable";
+import { SpotPricesPanel } from "@/components/energy/SpotPricesPanel";
 
 export const Route = createFileRoute("/energi/strompriser")({
   head: () => ({ meta: [
@@ -13,4 +13,4 @@ export const Route = createFileRoute("/energi/strompriser")({
   component: Prices,
 });
 
-function Prices() { return <EnergyUnavailable kind="prices" />; }
+function Prices() { return <SpotPricesPanel />; }

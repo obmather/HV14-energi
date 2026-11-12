@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## HV14 Water rules
+- Energi spot-price parsing and VAT presentation live in `src/lib/energy/prices-client.ts`; current prices are selected from the confirmed daily response by timestamp, and unconfirmed endpoint envelopes must fail visibly. Why: private API access cannot verify alternative shapes and missing prices must never be fabricated.
 - The existing FastAPI backend is the only data source; never add a database, ingestion, or Lovable Cloud for readings. Why: spec mandates PostgreSQL/FastAPI as authority.
 - All API field mapping lives in `src/lib/water/api-client.ts`; document assumptions in `docs/backend-contract.md`. Why: OpenAPI schema not yet confirmed.
 - Data is fetched in the browser via React Query (`src/lib/water/queries.ts`), not SSR loaders. Why: the API is on a private network reachable from the user's browser, not the edge server.

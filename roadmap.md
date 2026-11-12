@@ -1,4 +1,5 @@
 # HV14 navigation
+- [x] Implement Strømpriser; VAT/Norgespris/Oslo and missing-data tests pass, desktop/mobile UI checked with intercepted examples. Live API and tomorrow envelope remain unverified on the private server.
 - [x] Match Energi to the original single-row Water header without changing Water or Easee behavior; add its settings destination and verify navigation.
 - [x] Identify the local separation revision, exact build commands/artifacts, and confirm water regression checks.
 - [ ] Confirm separation is available on GitHub main; blocked on Git sync status/branch verification in Project settings → Git.

@@ -1,17 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { monthRange, norgesprisErrorMessage, NorgesprisHttpError, parseSummary, NorgesprisResponseError } from "@/lib/energy/norgespris-client";
-const base = { status: "incomplete", verified_hours: 10, expected_hours: 744, adjustment_nok_ex_vat: null, agreement: { fixed_price_nok_kwh_ex_vat: 0.4, monthly_cap_kwh: 5000, valid_from: "2025-10-01T00:00:00+02:00", valid_to: null } };
+import { monthRange, norgesprisErrorMessage, NorgesprisHttpError, parseMonth, parseSummary, NorgesprisResponseError } from "@/lib/energy/norgespris-client";
+// Real HV14 responses (2026-11-12).
+const agreement = { id: 1, valid_from: "2025-10-17", valid_to: "2026-12-31", fixed_price_nok_kwh: "0.400000", monthly_limit_kwh: "5000.000000", price_area: "NO2" };
+const env = { device_id: "aidon_main", price_area: "NO2", start_utc: "2026-11-12T10:00:00+00:00", end_utc: "2026-11-12T11:00:00+00:00", agreement };
+const summary = { ...env, status: "incomplete", total_hours: 1, verified_hours: 0, hour_statuses: { incomplete_month_history: 1 }, eligible_kwh: null, adjustment_nok_ex_vat: null };
+const month = { ...env, hours: [{ hour_start: "2026-11-12T10:00:00+00:00", eligible_kwh: null, adjustment_nok_ex_vat: null, status: "incomplete_month_history" }] };
 describe("Norgespris client", () => {
-  it("reads the monthly cap from the API and keeps null adjustment as null", () => {
-    const s = parseSummary(base);
-    expect(s.agreement.monthlyCapKwh).toBe(5000);
+  it("parses the real summary; cap 5000 kWh from API, nulls stay null", () => {
+    const s = parseSummary(summary);
+    expect(s.agreement?.monthlyCapKwh).toBe(5000);
+    expect(s.agreement?.fixedPriceNokKwhExVat).toBe(0.4);
+    expect(s.totalHours).toBe(1);
+    expect(s.verifiedHours).toBe(0);
     expect(s.adjustmentNokExVat).toBeNull();
+    expect(s.eligibleKwh).toBeNull();
   });
-  it("rejects unknown status", () => { expect(() => parseSummary({ ...base, status: "ok" })).toThrow(NorgesprisResponseError); });
-  it("builds Oslo month bounds", () => {
+  it("parses the real month response", () => {
+    const m = parseMonth(month);
+    expect(m.hours[0]).toEqual({ startIso: "2026-11-12T10:00:00+00:00", eligibleKwh: null, adjustmentNokExVat: null, status: "incomplete_month_history" });
+  });
+  it("rejects another device", () => { expect(() => parseSummary({ ...summary, device_id: "x" })).toThrow(NorgesprisResponseError); });
+  it("builds Oslo month bounds across DST", () => {
     expect(monthRange("2026-01")).toEqual({ start_utc: "2025-12-31T23:00:00.000Z", end_utc: "2026-01-31T23:00:00.000Z" });
-  });
-  it("handles DST months", () => {
     expect(monthRange("2026-03")).toEqual({ start_utc: "2026-02-28T23:00:00.000Z", end_utc: "2026-03-31T22:00:00.000Z" });
     expect(monthRange("2026-10")).toEqual({ start_utc: "2026-09-30T22:00:00.000Z", end_utc: "2026-10-31T23:00:00.000Z" });
   });

@@ -4,12 +4,13 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime, formatNumber } from "@/lib/water/format";
-import { norgesprisErrorMessage, norgesprisMonthQuery, norgesprisSummaryQuery } from "@/lib/energy/norgespris-client";
+import { hourStatusLabel, provisionalTotals, norgesprisErrorMessage, norgesprisMonthQuery, norgesprisSummaryQuery } from "@/lib/energy/norgespris-client";
 
 const DASH = "—";
 const kr = (n: number | null) => (n == null ? DASH : `${formatNumber(n, 2)} kr`);
 const STATUS: Record<string, string> = { complete: "Komplett", incomplete: "Datagrunnlag ufullstendig", verified: "Verifisert", missing: "Mangler data", incomplete_month_history: "Ufullstendig månedshistorikk" };
 const label = (s: string) => STATUS[s] ?? s;
+const signedKr = (n: number | null) => (n == null ? DASH : `${n > 0 ? "+" : ""}${formatNumber(n, 2)} kr`);
 const date = (iso: string | null) => (iso ? new Intl.DateTimeFormat("nb-NO", { timeZone: "Europe/Oslo", dateStyle: "medium" }).format(new Date(iso)) : "Ikke oppgitt");
 
 function ErrorBox({ error, retry }: { error: unknown; retry: () => void }) {
@@ -26,6 +27,7 @@ export function NorgesprisPanel() {
   const hours = useQuery({ ...norgesprisMonthQuery(month), enabled: !!month });
   const s = summary.data;
   const complete = s?.status === "complete";
+  const prov = hours.data ? provisionalTotals(hours.data.hours) : null;
   return <section className="surface space-y-5 p-5 sm:p-6" aria-labelledby="norgespris-title">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <h2 id="norgespris-title" className="text-lg font-semibold">Norgespris – avtale og justering</h2>
@@ -52,6 +54,16 @@ export function NorgesprisPanel() {
           <p className="text-xs text-muted-foreground">Eks. mva. · justering for valgt måned, ikke total besparelse på strømregningen</p></div>
       </dl>
     </>}
+    {!complete && prov && prov.calculatedHours > 0 && <div className="rounded-lg border border-border p-4">
+      <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Foreløpig Norgespris-justering denne måneden</h3>
+      <dl className="mt-3 grid gap-4 sm:grid-cols-4">
+        <div><dt className="text-xs text-muted-foreground">Samlet justering</dt><dd className="mt-1 text-lg font-semibold tabular">{signedKr(prov.adjustmentNokExVat)}</dd><p className="text-xs text-muted-foreground">Eks. mva. · Foreløpig</p></div>
+        <div><dt className="text-xs text-muted-foreground">Dokumentert forbruk</dt><dd className="mt-1 text-lg font-semibold tabular">{prov.kwh == null ? DASH : `${formatNumber(prov.kwh, 2)} kWh`}</dd></div>
+        <div><dt className="text-xs text-muted-foreground">Timer med beregnet beløp</dt><dd className="mt-1 text-lg font-semibold tabular">{formatNumber(prov.calculatedHours, 0)}</dd></div>
+        <div><dt className="text-xs text-muted-foreground">Timer uten tilstrekkelige data</dt><dd className="mt-1 text-lg font-semibold tabular">{formatNumber(prov.missingHours, 0)}</dd></div>
+      </dl>
+      <p className="mt-3 text-xs text-warning">Foreløpig beregning – ikke et verifisert månedsoppgjør.</p>
+    </div>}
     <details className="border-t border-border pt-4">
       <summary className="cursor-pointer text-sm font-medium">Timeoversikt</summary>
       <div className="mt-3">{hours.isPending ? <Skeleton className="h-24" /> : hours.isError ? <ErrorBox error={hours.error} retry={() => hours.refetch()} />
@@ -62,8 +74,8 @@ export function NorgesprisPanel() {
           <tbody>{hours.data.hours.map((h) => <tr key={h.startIso} className="border-b border-border">
             <td className="py-2 pr-3">{formatDateTime(new Date(h.startIso))}</td>
             <td className="py-2 text-right tabular">{h.eligibleKwh == null ? DASH : formatNumber(h.eligibleKwh, 3)}</td>
-            <td className="py-2 text-right tabular">{s?.status === "complete" && h.adjustmentNokExVat != null ? formatNumber(h.adjustmentNokExVat, 2) : DASH}</td>
-            <td className="py-2 pl-3">{label(h.status)}</td></tr>)}</tbody></table></div></>}</div>
+            <td className="py-2 text-right tabular">{h.adjustmentNokExVat == null ? DASH : <>{formatNumber(h.adjustmentNokExVat, 2)}{!complete && <span className="ml-1 text-xs text-warning">Foreløpig</span>}</>}</td>
+            <td className="py-2 pl-3">{hourStatusLabel(h.status, h.adjustmentNokExVat != null)}</td></tr>)}</tbody></table></div></>}</div>
     </details>
     <p className="text-xs text-muted-foreground">Alle beløp i denne seksjonen er eksklusive merverdiavgift og hentes direkte fra Norgespris-tjenesten. Måler: Aidon hovedmåler · Prisområde NO2.</p>
   </section>;

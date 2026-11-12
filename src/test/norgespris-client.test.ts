@@ -31,3 +31,24 @@ describe("Norgespris client", () => {
     expect(norgesprisErrorMessage(new NorgesprisHttpError(503))).toContain("503");
   });
 });
+import { provisionalTotals, hourStatusLabel } from "@/lib/energy/norgespris-client";
+describe("Norgespris provisional totals", () => {
+  const h = (kwh: string | null, adj: string | null, status = "incomplete_month_history") => ({ hour_start: "2026-11-12T10:00:00+00:00", eligible_kwh: kwh, adjustment_nok_ex_vat: adj, status });
+  it("sums only calculated hours and counts missing ones", () => {
+    const m = parseMonth({ ...env, hours: [h("2.220000", "3.406035000000"), h("1.5", "-1.0"), h(null, null, "missing_consumption")] });
+    const t = provisionalTotals(m.hours);
+    expect(t.adjustmentNokExVat).toBeCloseTo(2.406035);
+    expect(t.kwh).toBeCloseTo(3.72);
+    expect(t.calculatedHours).toBe(2);
+    expect(t.missingHours).toBe(1);
+  });
+  it("keeps totals null when nothing is calculated", () => {
+    expect(provisionalTotals(parseMonth(month).hours).adjustmentNokExVat).toBeNull();
+  });
+  it("labels statuses in Norwegian", () => {
+    expect(hourStatusLabel("incomplete_month_history", true)).toBe("Foreløpig beregnet");
+    expect(hourStatusLabel("incomplete_month_history", false)).toBe("Mangler månedshistorikk");
+    expect(hourStatusLabel("missing_spot_price", false)).toBe("Mangler spotpris");
+    expect(hourStatusLabel("outside_agreement", false)).toBe("Utenfor avtaleperioden");
+  });
+});

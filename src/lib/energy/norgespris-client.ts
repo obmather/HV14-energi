@@ -93,3 +93,20 @@ export const norgesprisMonthQuery = (month: string) => queryOptions({
   queryKey: ["hv14", "energi", "norgespris", "month", month],
   queryFn: async () => { const v = await get("month", month); return v === null ? null : parseMonth(v); }, retry: (n, e) => !(e instanceof NorgesprisHttpError && e.status < 500) && n < 1,
 });
+
+/** Provisional totals summed only from hours the API actually calculated; missing hours are counted, never estimated. */
+export function provisionalTotals(hours: NorgesprisHour[]) {
+  let adjustmentNokExVat = 0, kwh = 0, calculatedHours = 0, hasKwh = false;
+  for (const h of hours) {
+    if (h.eligibleKwh != null) { kwh += h.eligibleKwh; hasKwh = true; }
+    if (h.adjustmentNokExVat != null) { adjustmentNokExVat += h.adjustmentNokExVat; calculatedHours++; }
+  }
+  return { adjustmentNokExVat: calculatedHours ? adjustmentNokExVat : null, kwh: hasKwh ? kwh : null, calculatedHours, missingHours: hours.length - calculatedHours };
+}
+
+const HOUR_STATUS: Record<string, string> = { complete: "Komplett", verified: "Verifisert", incomplete: "Datagrunnlag ufullstendig", missing: "Mangler data",
+  missing_consumption: "Mangler forbruksdata", missing_spot_price: "Mangler spotpris", outside_agreement: "Utenfor avtaleperioden" };
+export function hourStatusLabel(status: string, hasAmount: boolean): string {
+  if (status === "incomplete_month_history") return hasAmount ? "Foreløpig beregnet" : "Mangler månedshistorikk";
+  return HOUR_STATUS[status] ?? status;
+}

@@ -7,11 +7,12 @@ import { addOsloDays } from "@/lib/water/time";
 // docs/energy-norgespris-contract.md and fail visibly otherwise. No values are computed here.
 export const NORGESPRIS_DEVICE = "aidon_main";
 export const NORGESPRIS_AREA = "NO2";
-export type NorgesprisStatus = "complete" | "incomplete";
-export interface NorgesprisAgreement { fixedPriceNokKwhExVat: number | null; monthlyCapKwh: number | null; validFrom: string | null; validTo: string | null }
-export interface NorgesprisSummary { status: NorgesprisStatus; verifiedHours: number | null; expectedHours: number | null; adjustmentNokExVat: number | null; agreement: NorgesprisAgreement }
-export interface NorgesprisHour { startIso: string; endIso: string; consumptionKwh: number | null; spotNokKwhExVat: number | null; adjustmentNokExVat: number | null; status: string }
-export interface NorgesprisMonth { status: NorgesprisStatus; hours: NorgesprisHour[] }
+// Confirmed against real HV14 responses (only status=incomplete observed so far).
+export type NorgesprisStatus = string; // "complete" is the only value that unlocks amounts
+export interface NorgesprisAgreement { id: number; fixedPriceNokKwhExVat: number | null; monthlyCapKwh: number | null; validFrom: string | null; validTo: string | null; priceArea: string }
+export interface NorgesprisSummary { status: NorgesprisStatus; totalHours: number | null; verifiedHours: number | null; hourStatuses: Record<string, number>; eligibleKwh: number | null; adjustmentNokExVat: number | null; agreement: NorgesprisAgreement | null }
+export interface NorgesprisHour { startIso: string; eligibleKwh: number | null; adjustmentNokExVat: number | null; status: string }
+export interface NorgesprisMonth { agreement: NorgesprisAgreement | null; hours: NorgesprisHour[] }
 export class NorgesprisResponseError extends Error {}
 export class NorgesprisHttpError extends Error { constructor(public status: number) { super(`HTTP ${status}`); } }
 export function norgesprisErrorMessage(e: unknown): string {
@@ -26,31 +27,41 @@ export function norgesprisErrorMessage(e: unknown): string {
 }
 
 const obj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+const bad = (m: string): never => { throw new NorgesprisResponseError(m); };
+// Backend sends decimals as strings ("0.400000"); null stays null, never 0.
 const num = (v: unknown): number | null => {
   if (v === null || v === undefined) return null;
-  if (typeof v !== "number" || !Number.isFinite(v)) throw new NorgesprisResponseError("Ugyldig tallverdi fra API-et.");
-  return v;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v)) return Number(v);
+  return bad("Ugyldig tallverdi fra API-et.");
 };
-const str = (v: unknown): string | null => (v === null || v === undefined ? null : typeof v === "string" ? v : (() => { throw new NorgesprisResponseError("Ugyldig tekstverdi fra API-et."); })());
-const status = (v: unknown): NorgesprisStatus => {
-  if (v === "complete" || v === "incomplete") return v;
-  throw new NorgesprisResponseError("Ukjent datastatus fra API-et.");
+const str = (v: unknown): string | null => (v === null || v === undefined ? null : typeof v === "string" ? v : bad("Ugyldig tekstverdi fra API-et."));
+const envelope = (v: unknown): Record<string, unknown> => {
+  if (!obj(v) || v["device_id"] !== NORGESPRIS_DEVICE || v["price_area"] !== NORGESPRIS_AREA) bad("Ukjent Norgespris-format fra API-et.");
+  return v as Record<string, unknown>;
 };
-
-export function parseSummary(v: unknown): NorgesprisSummary {
-  if (!obj(v) || !obj(v["agreement"])) throw new NorgesprisResponseError("Ukjent Norgespris-format fra API-et.");
-  const a = v["agreement"];
-  return {
-    status: status(v["status"]), verifiedHours: num(v["verified_hours"]), expectedHours: num(v["expected_hours"]),
-    adjustmentNokExVat: num(v["adjustment_nok_ex_vat"]),
-    agreement: { fixedPriceNokKwhExVat: num(a["fixed_price_nok_kwh_ex_vat"]), monthlyCapKwh: num(a["monthly_cap_kwh"]), validFrom: str(a["valid_from"]), validTo: str(a["valid_to"]) },
-  };
+function agreement(a: unknown): NorgesprisAgreement | null {
+  if (a === null || a === undefined) return null;
+  if (!obj(a) || typeof a["id"] !== "number" || typeof a["price_area"] !== "string") return bad("Ukjent avtaleformat fra API-et.");
+  return { id: a["id"], fixedPriceNokKwhExVat: num(a["fixed_price_nok_kwh"]), monthlyCapKwh: num(a["monthly_limit_kwh"]),
+    validFrom: str(a["valid_from"]), validTo: str(a["valid_to"]), priceArea: a["price_area"] };
 }
-export function parseMonth(v: unknown): NorgesprisMonth {
-  if (!obj(v) || !Array.isArray(v["hours"])) throw new NorgesprisResponseError("Ukjent timeformat fra API-et.");
-  return { status: status(v["status"]), hours: v["hours"].map((h) => {
-    if (!obj(h) || typeof h["period_start"] !== "string" || typeof h["period_end"] !== "string" || typeof h["status"] !== "string") throw new NorgesprisResponseError("Ugyldig time i svaret.");
-    return { startIso: h["period_start"], endIso: h["period_end"], consumptionKwh: num(h["consumption_kwh"]), spotNokKwhExVat: num(h["spot_price_nok_kwh_ex_vat"]), adjustmentNokExVat: num(h["adjustment_nok_ex_vat"]), status: h["status"] };
+
+export function parseSummary(raw: unknown): NorgesprisSummary {
+  const v = envelope(raw);
+  if (typeof v["status"] !== "string") bad("Ukjent datastatus fra API-et.");
+  const hs = v["hour_statuses"] ?? {};
+  if (!obj(hs) || Object.values(hs).some((n) => typeof n !== "number")) bad("Ugyldige timestatuser fra API-et.");
+  return { status: v["status"] as string, totalHours: num(v["total_hours"]), verifiedHours: num(v["verified_hours"]),
+    hourStatuses: hs as Record<string, number>, eligibleKwh: num(v["eligible_kwh"]), adjustmentNokExVat: num(v["adjustment_nok_ex_vat"]),
+    agreement: agreement(v["agreement"]) };
+}
+export function parseMonth(raw: unknown): NorgesprisMonth {
+  const v = envelope(raw);
+  if (!Array.isArray(v["hours"])) bad("Ukjent timeformat fra API-et.");
+  return { agreement: agreement(v["agreement"]), hours: (v["hours"] as unknown[]).map((h) => {
+    if (!obj(h) || typeof h["hour_start"] !== "string" || !Number.isFinite(Date.parse(h["hour_start"])) || typeof h["status"] !== "string") return bad("Ugyldig time i svaret.");
+    return { startIso: h["hour_start"], eligibleKwh: num(h["eligible_kwh"]), adjustmentNokExVat: num(h["adjustment_nok_ex_vat"]), status: h["status"] };
   }) };
 }
 

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pre-*
+tests/
+.git/
+.env
+.env.*
+*.key
+*secret*

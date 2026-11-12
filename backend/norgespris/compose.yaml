@@ -1,0 +1,29 @@
+services:
+  norgespris:
+    image: hv14-energy-norgespris:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hv14-energy-norgespris
+    restart: unless-stopped
+
+    environment:
+      DB_HOST: hv14-water-postgres
+
+    secrets:
+      - energy_db_password
+
+    networks:
+      - water-db
+
+    ports:
+      - "127.0.0.1:18083:8000"
+
+secrets:
+  energy_db_password:
+    file: /opt/hv14/energy/secrets/db_password
+
+networks:
+  water-db:
+    external: true
+    name: water-db_default

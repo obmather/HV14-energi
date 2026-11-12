@@ -5,8 +5,8 @@ import { CircleDollarSign, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/water/AppShell";
-import { formatDate, formatDateTime, formatNumber } from "@/lib/water/format";
-import { dailyPricesQuery, isCurrentPrice, NORGESPRIS_ORE, PRICE_AREA, priceChartRows, priceHourLabel, priceIntervalLabel, priceOre, PriceResponseError, priceStats, type DailyPrices } from "@/lib/energy/prices-client";
+import { formatDate, formatDateTime, formatNumber, formatTime } from "@/lib/water/format";
+import { dailyPricesQuery, isCurrentPrice, NORGESPRIS_ORE, PRICE_AREA, priceChartRows, priceIntervalLabel, priceOre, PriceResponseError, priceStats, type DailyPrices } from "@/lib/energy/prices-client";
 
 const value = (n: number | null | undefined) => n == null ? "Mangler pris" : `${formatNumber(n, 2)} øre/kWh`;
 
@@ -19,7 +19,7 @@ function PriceChart({ data, now }: { data: DailyPrices; now: Date }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 28, right: 20, left: 0, bottom: 0 }} barCategoryGap="15%">
           <CartesianGrid vertical={false} stroke="var(--color-border)" />
-          <XAxis dataKey="startIso" tickFormatter={(v: string) => priceHourLabel({ startIso: v } as Parameters<typeof priceHourLabel>[0])} minTickGap={18}
+          <XAxis dataKey="startIso" tickFormatter={(v: string) => formatTime(new Date(v))} minTickGap={18}
             tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={{ stroke: "var(--color-border)" }} />
           <YAxis width={55} domain={[(min: number) => Math.min(min, 0), (max: number) => Math.max(max, 60)]} tickFormatter={(v: number) => formatNumber(v, 0)}
             tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={false} />
@@ -33,7 +33,7 @@ function PriceChart({ data, now }: { data: DailyPrices; now: Date }) {
               {row.ore != null && <div className="mt-1">Mot Norgespris: {row.ore >= NORGESPRIS_ORE ? "+" : ""}{formatNumber(row.ore - NORGESPRIS_ORE, 2)} øre/kWh</div>}
             </div>;
           }} />
-          <ReferenceLine y={NORGESPRIS_ORE} stroke="var(--color-warning)" strokeDasharray="5 4" label={{ value: "Norgespris · 50 øre/kWh", position: "insideTopRight", fill: "var(--color-warning)", fontSize: 11 }} />
+          <ReferenceLine isFront y={NORGESPRIS_ORE} stroke="var(--color-warning)" strokeDasharray="5 4" label={{ value: "Norgespris · 50 øre/kWh", position: "insideTopRight", fill: "var(--color-warning)", fontSize: 11 }} />
           <Bar dataKey="ore" radius={[3, 3, 0, 0]} isAnimationActive={false}>
             {rows.map((r) => <Cell key={r.startIso} fill={r.price && isCurrentPrice(r.price, now) ? "var(--color-teal)" : "var(--color-primary)"} />)}
           </Bar>

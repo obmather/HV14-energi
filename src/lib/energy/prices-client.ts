@@ -20,23 +20,23 @@ const object = (v: unknown): v is Record<string, unknown> => typeof v === "objec
 const iso = (v: unknown): v is string => typeof v === "string" && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(v) && Number.isFinite(Date.parse(v));
 
 export function parseSpotPrice(v: unknown): SpotPrice {
-  if (!object(v) || v.price_area !== PRICE_AREA || !iso(v.period_start) || !iso(v.period_end)
-    || Date.parse(v.period_end) <= Date.parse(v.period_start) || typeof v.includes_vat !== "boolean"
-    || typeof v.source !== "string" || !iso(v.retrieved_at)
-    || !(v.price_nok_kwh === null || (typeof v.price_nok_kwh === "number" && Number.isFinite(v.price_nok_kwh)))) {
+  if (!object(v) || v["price_area"] !== PRICE_AREA || !iso(v["period_start"]) || !iso(v["period_end"])
+    || Date.parse(v["period_end"]) <= Date.parse(v["period_start"]) || typeof v["includes_vat"] !== "boolean"
+    || typeof v["source"] !== "string" || !iso(v["retrieved_at"])
+    || !(v["price_nok_kwh"] === null || (typeof v["price_nok_kwh"] === "number" && Number.isFinite(v["price_nok_kwh"])))) {
     throw new PriceResponseError("Ukjent prisformat fra API-et.");
   }
-  return { area: v.price_area, startIso: v.period_start, endIso: v.period_end, nokKwh: v.price_nok_kwh,
-    includesVat: v.includes_vat, source: v.source, retrievedIso: v.retrieved_at };
+  return { area: v["price_area"], startIso: v["period_start"], endIso: v["period_end"], nokKwh: v["price_nok_kwh"],
+    includesVat: v["includes_vat"], source: v["source"], retrievedIso: v["retrieved_at"] };
 }
 
 export function parseTodayPrices(v: unknown): DailyPrices {
-  if (!object(v) || v.price_area !== PRICE_AREA || typeof v.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v.date)
-    || !Number.isInteger(v.period_count) || !Array.isArray(v.prices) || v.period_count !== v.prices.length) {
+  if (!object(v) || v["price_area"] !== PRICE_AREA || typeof v["date"] !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v["date"])
+    || !Number.isInteger(v["period_count"]) || !Array.isArray(v["prices"]) || v["period_count"] !== v["prices"].length) {
     throw new PriceResponseError("Ukjent dagsprisformat fra API-et.");
   }
-  const prices = v.prices.map(parseSpotPrice).sort((a, b) => Date.parse(a.startIso) - Date.parse(b.startIso));
-  return { area: v.price_area, date: v.date, count: prices.length, prices };
+  const prices = v["prices"].map(parseSpotPrice).sort((a, b) => Date.parse(a.startIso) - Date.parse(b.startIso));
+  return { area: v["price_area"], date: v["date"], count: prices.length, prices };
 }
 
 // Only today's envelope is confirmed. Other handlers deliberately validate
